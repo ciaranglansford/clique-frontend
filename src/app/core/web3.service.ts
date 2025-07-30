@@ -2,18 +2,18 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, from, map } from 'rxjs';
 import { ethers } from 'ethers';
 
-const FACTORY_ADDRESS = '0xYourFactoryAddress';
+const FACTORY_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; // Replace with actual address
 const FACTORY_ABI = [
   'function createPot(uint256,uint256) returns (address)',
   'function getAllPots() view returns (address[])'
 ];
 const POT_ABI = [
-  'function join() payable',
+  'function joinPot() payable',
   'function triggerPayout()',
   'function getParticipants() view returns (address[])',
-  'function getPotStatus() view returns (bool,address,uint256)',
   'function entryAmount() view returns(uint256)',
-  'function maxParticipants() view returns(uint256)'
+  'function maxParticipants() view returns(uint256)',
+  'function getPotDetails() view returns (address,uint256,uint256,uint256,uint256,uint8,uint256)',
 ];
 
 @Injectable({ providedIn: 'root' })
@@ -35,12 +35,24 @@ export class Web3Service {
 
   async connectWallet() {
     if (!(window as any).ethereum) throw new Error('MetaMask not found');
-    this.provider = new ethers.BrowserProvider((window as any).ethereum);
+
+    // 👇 Updated: Add explicit chain info to avoid ENS issues on local dev
+    this.provider = new ethers.BrowserProvider((window as any).ethereum, {
+      name: 'localhost',
+      chainId: 31337,
+    });
+
+    // 👇 Updated: Avoid getSigner().getAddress() reverse ENS lookup
     const accounts = await this.provider.send('eth_requestAccounts', []);
-    this.signer = await this.provider.getSigner();
+    // this.signer = await this.provider.getSigner(); // ❌ Triggers ENS lookup internally
+    this.signer = await this.provider.getSigner(accounts[0]); // ✅ Use explicit signer address
+
     this.address$.next(accounts[0]);
+
     const network = await this.provider.getNetwork();
     this.chainId$.next(Number(network.chainId));
+
+    // Reconnect logic
     (window as any).ethereum.on('accountsChanged', () => this.autoConnect());
     (window as any).ethereum.on('chainChanged', () => this.autoConnect());
   }
@@ -67,7 +79,7 @@ export class Web3Service {
 
   joinPot(addr: string, amount: bigint) {
     const pot = this.potContract(addr);
-    return from(pot['join']({ value: amount }));
+    return from(pot['joinPot']({ value: amount }));
   }
 
   triggerPayout(addr: string) {
@@ -75,9 +87,9 @@ export class Web3Service {
     return from(pot['triggerPayout']());
   }
 
-  getPotStatus(addr: string) {
+  getPotDetails(addr: string) {
     const pot = this.potContract(addr);
-    return from(pot['getPotStatus']());
+    return from(pot['getPotDetails']());
   }
 
   getParticipants(addr: string) {

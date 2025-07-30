@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { Web3Service } from '../../core/web3.service';
+import { ethers } from 'ethers';
 
-import { ethers } from "ethers";
 @Component({
   selector: 'app-pot-details',
   standalone: true,
@@ -17,17 +17,22 @@ import { ethers } from "ethers";
       <li *ngFor="let p of participants">{{ p }}</li>
     </ul>
     <div>Status: {{ full ? 'Full' : 'Open' }}</div>
-    <div *ngIf="winner">Winner: {{ winner }}</div>
+    <div>Round: {{ currentRound }}</div>
+    <div>Participants: {{ currentCount }} / {{ maxParticipants }}</div>
     <div>Total ETH: {{ balance }}</div>
   </div>`
 })
 export class PotDetailsComponent implements OnInit, OnDestroy {
   address!: string;
   participants: string[] = [];
+
   full = false;
-  winner?: string;
   balance = '';
-  sub?: Subscription;
+  currentRound = 0;
+  currentCount = 0;
+  maxParticipants = 0;
+
+  private sub?: Subscription;
 
   constructor(private route: ActivatedRoute, private web3: Web3Service) {}
 
@@ -37,12 +42,32 @@ export class PotDetailsComponent implements OnInit, OnDestroy {
     this.sub = interval(15000).subscribe(() => this.load());
   }
 
-  ngOnDestroy() { this.sub?.unsubscribe(); }
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
+  }
 
   load() {
-    this.web3.getParticipants(this.address).subscribe(list => this.participants = list);
-    this.web3.getPotStatus(this.address).subscribe(([full, winner, bal]) => {
-      this.full = full; this.winner = winner; this.balance = ethers.formatEther(bal);
-    });
+    this.web3.getParticipants(this.address)
+      .subscribe(list => this.participants = list);
+
+    this.web3.getPotDetails(this.address)
+      .subscribe(details => {
+        const [
+          potOwner,
+          entryAmt,
+          maxP,
+          round,
+          currentCount,
+          state,
+          balanceWei
+        ] = details;
+
+        this.currentRound = round.toNumber();
+        this.currentCount = currentCount.toNumber();
+        this.maxParticipants = maxP.toNumber();
+
+        this.full = (state === 0 && this.currentCount >= this.maxParticipants);
+        this.balance = ethers.formatEther(balanceWei);
+      });
   }
 }
