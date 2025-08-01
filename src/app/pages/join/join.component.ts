@@ -43,7 +43,7 @@ export class JoinComponent implements OnInit, OnDestroy {
       pots.forEach((addr: string) => {
         this.web3.getParticipants(addr).subscribe(list => this.counts[addr] = list.length);
         this.web3.maxParticipants(addr).subscribe(v => this.sizes[addr] = Number(v));
-        this.web3.getPotDetails(addr).subscribe(([full, , ]) => this.full[addr] = full);
+        //this.web3.getPotDetails(addr).subscribe(([full, , ]) => this.full[addr] = full);
       });
     });
   }

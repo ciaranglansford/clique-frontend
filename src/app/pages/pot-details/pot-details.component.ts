@@ -62,9 +62,9 @@ export class PotDetailsComponent implements OnInit, OnDestroy {
           balanceWei
         ] = details;
 
-        this.currentRound = round.toNumber();
-        this.currentCount = currentCount.toNumber();
-        this.maxParticipants = maxP.toNumber();
+        this.currentRound = round;
+        this.currentCount = currentCount;
+        this.maxParticipants = maxP;
 
         this.full = (state === 0 && this.currentCount >= this.maxParticipants);
         this.balance = ethers.formatEther(balanceWei);
