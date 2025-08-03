@@ -17,6 +17,7 @@ import { ethers } from 'ethers';
       <div>
         <a [routerLink]="['/pot', pot]" class="underline">{{ pot | slice:0:6 }}...{{ pot | slice:-4 }}</a>
         <span class="ml-2">{{ counts[pot] || 0 }}/{{ sizes[pot] || '-' }}</span>
+        <span class="ml-2"> {{ entryAmount[pot] }} ETH </span>
       </div>
       <button class="px-2 py-1 bg-blue-500 text-white rounded" (click)="join(pot)" [disabled]="joined[pot] || full[pot]">Join</button>
     </div>
@@ -26,6 +27,7 @@ export class JoinComponent implements OnInit, OnDestroy {
   pots: string[] = [];
   counts: Record<string, number> = {};
   sizes: Record<string, number> = {};
+  entryAmount: Record<string, number> = {};
   joined: Record<string, boolean> = {};
   full: Record<string, boolean> = {};
   sub?: Subscription;
@@ -43,6 +45,7 @@ export class JoinComponent implements OnInit, OnDestroy {
       pots.forEach((addr: string) => {
         this.web3.getParticipants(addr).subscribe(list => this.counts[addr] = list.length);
         this.web3.maxParticipants(addr).subscribe(v => this.sizes[addr] = Number(v));
+        this.web3.entryAmount(addr).subscribe(v => this.entryAmount[addr] = Number(ethers.formatEther(v)));
         //this.web3.getPotDetails(addr).subscribe(([full, , ]) => this.full[addr] = full);
       });
     });
