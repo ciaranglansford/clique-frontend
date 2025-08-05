@@ -1,0 +1,46 @@
+<div class="pot-details-container">
+  <!-- Loading / Error -->
+  <div *ngIf="loading(); else content" class="loading">
+    Loading pot details...
+  </div>
+  <div *ngIf="error()" class="error">
+    {{ error() }}
+  </div>
+
+  <!-- Main Content -->
+  <ng-template #content>
+    <div class="pot-header">
+      <h2>Pot: {{ address }}</h2>
+      <p>Balance: Ξ {{ balance() }}</p>
+      <p>Round: {{ currentRound() }}</p>
+      <p>
+        Participants: {{ currentCount() }} / {{ maxParticipants() }}
+        <span *ngIf="full()" class="badge full">FULL</span>
+        <span *ngIf="!full() && maxParticipants() - currentCount() <= 2" class="badge warning">
+          {{ maxParticipants() - currentCount() }} spot{{ maxParticipants() - currentCount() === 1 ? '' : 's' }} left
+        </span>
+      </p>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <canvas
+        baseChart
+        [data]="chartData()"
+        [options]="chartOptions"
+        [type]="'doughnut'">
+      </canvas>
+    </div>
+
+    <!-- Participant list -->
+    <div class="participant-list">
+      <h3>Participants</h3>
+      <ul>
+        <li *ngFor="let addr of participants()">
+          <span class="color-dot" [style.background]="participantColors.get(addr)"></span>
+          <code>{{ addr }}</code>
+        </li>
+      </ul>
+    </div>
+  </ng-template>
+</div>

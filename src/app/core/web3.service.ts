@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, from, map } from 'rxjs';
 import { ethers } from 'ethers';
 
-const FACTORY_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; // Replace with actual address
+const FACTORY_ADDRESS = '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'; // Replace with actual address
 const FACTORY_ABI = [
   'function createPot(uint256,uint256) returns (address)',
   'function getAllPots() view returns (address[])'

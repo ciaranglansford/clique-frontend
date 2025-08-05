@@ -1,0 +1,22 @@
+/* pot-details.component.css */
+
+.pot-details-container {
+  padding: 1rem;
+}
+
+.pot-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.chart-container {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+canvas {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+}
